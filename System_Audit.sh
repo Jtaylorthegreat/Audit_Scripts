@@ -18,7 +18,8 @@ ANTIVIRUS=`service ds_agent status | awk '{print $4,$5}'`
 SERVICES=`systemctl list-unit-files | grep enabled`
 #filesystems
 FILESYSTEM=`lsblk -f`
-
+#directories
+DIRECTORIES=`du -x -BG / | sort -rn | head -n 20`
 
 echo "
 ==================================================
@@ -39,5 +40,8 @@ echo "
 - Current Running Services...: $SERVICES
 ==================================================
 - Current Mounted Filesystems: $FILESYSTEM
+==================================================
+- Top 20 Largest Directories.: 
+$DIRECTORIES
 ==================================================
 " >> /home/$USER/"System_Audit$(date '+%F').txt"
