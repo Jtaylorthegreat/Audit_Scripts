@@ -25,7 +25,8 @@ echo "--------------------------------------------------------------------------
 
 ###CLEANUP:
 echo "Starting Cleanup of files older than $RETENTIONDAYS days                                                         $(date)" >> cleanup.log;
-echo "Removing the following files(if empty no files removed):                                                   " >> cleanup.log;
-echo `find /home/$USER/ -name "WEB_*" -mtime +"$RETENTIONDAYS" -exec ls {} \; | sort -n`                                >>   cleanup.log;
+echo "Removing the following files(if empty no files removed):                                                                " >> cleanup.log;
+echo `find /home/$USER/ -name "WEB_*" -mtime +"$RETENTIONDAYS" -exec ls {} \; | sort -n`                                        >>   cleanup.log;
 find /home/$USER/ -name "WEB_*" -mtime +"$RETENTIONDAYS" -exec rm -rf {} \;
-echo "Cleanup finished                                                                                                $(date)" >> cleanup.log;
+echo "Cleanup finished                                                                                                 $(date)" >> cleanup.log;
+echo "------------------------------------------------------------------------------------------------------------------------" >> cleanup.log;
