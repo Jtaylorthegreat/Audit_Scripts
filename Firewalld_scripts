@@ -1,0 +1,13 @@
+_______________________________________________________________________________________
+Random firewall scripts to set up for junior sysadmins for firewalld based systems:
+_______________________________________________________________________________________
+
+
+Block IP:
+-------------------------
+
+#!/bin/bash
+firewall-cmd --permanent --add-rich-rule="rule family='ipv4' source address='$1' reject"
+firewall-cmd --reload
+
+
