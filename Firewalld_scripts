@@ -7,7 +7,15 @@ Block IP:
 -------------------------
 
 #!/bin/bash
+
+if [ -z "$1" ]; then
+  echo "Usage: ./blockip IPADDRESS"
+  echo "Example: ./blockip 192.168.1.5"
+else
+
 firewall-cmd --permanent --add-rich-rule="rule family='ipv4' source address='$1' reject"
 firewall-cmd --reload
+fi
+
 
 
