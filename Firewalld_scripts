@@ -19,3 +19,17 @@ fi
 
 
 
+Allow_IP_port:
+----------------------------------
+
+#!/bin/bash
+
+if [ -z "$1" ]; then
+  echo "Usage: ./allow_IP_port IPADDRESS PORT"
+  echo "Example: ./allow_IP_port 192.168.1.5 2242"
+else
+
+
+firewall-cmd --permanent --add-rich-rule="rule family='ipv4' source address='$1' port protocol='tcp' port='$2' accept"
+firewall-cmd --reload
+fi
