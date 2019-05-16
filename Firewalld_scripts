@@ -1,5 +1,5 @@
 _______________________________________________________________________________________
-Random firewall scripts to set up for junior sysadmins for firewalld based systems:
+Random firewall scripts to assist junior sysadmins for firewalld based systems:
 _______________________________________________________________________________________
 
 
@@ -35,3 +35,23 @@ else
 firewall-cmd --permanent --add-rich-rule="rule family='ipv4' source address='$1' port protocol='tcp' port='$2' accept"
 firewall-cmd --reload
 fi
+
+
+
+Apache_Top_Unique_IP_Hits:
+----------------------------------------------------------------
+
+#simple one-liner to show unique hits for a specific vhost
+#!/bin/bash
+
+if [ -z "$1" ]; then
+  echo "Usage: ./Apache_Top_Unique_IP_Hits DATE"
+  echo "Example: ./Apache_Top_Unique_IP_Hits 16/May/2019"
+else
+
+grep $1 /var/log/httpd/access_log | awk '{print$1}' | sort | uniq -c | sort -nr | head -n 20
+
+
+fi
+
+
