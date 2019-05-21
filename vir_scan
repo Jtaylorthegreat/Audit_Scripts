@@ -1,0 +1,13 @@
+###Super Basic clamav script to scan web directories and post scan results to the site (For indexed sites)
+
+
+#!/bin/bash
+echo "Starting virus definition update     $(date)" > /var/www/VHOST/Scan.txt
+echo "------------------------------------" >> /var/www/VHOST/Scan.txt
+freshclam >> /var/www/VHOST/Scan.txt
+echo "------------------------------------" >> /var/www/VHOST/Scan.txt
+echo "Starting Virus Scan of web directory $(date)" >> /var/www/VHOST/Scan.txt
+clamscan -r -i /var/www/VHOST >> /var/www/VHOST/Scan.txt
+echo "------------------------------------" >> /var/www/VHOST/Scan.txt
+echo "Scan complete                        $(date)" >> /var/www/VHOST/Scan.txt
+systemctl reload httpd
