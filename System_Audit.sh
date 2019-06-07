@@ -44,4 +44,4 @@ echo "
 - Top 20 Largest Directories.: 
 $DIRECTORIES
 ==================================================
-" >> /home/$USER/"System_Audit$(date '+%F').txt"
+" >> /root/"System_Audit$(date '+%F').txt"
