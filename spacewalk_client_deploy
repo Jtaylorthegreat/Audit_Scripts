@@ -1,0 +1,78 @@
+#!/bin/bash
+
+
+SPACEWALKSERVERIP=
+SPACEWALKFQDN=
+CENTOS6_ACTIVATIONKEY=
+CENTOS7_ACTIVATIONKEY=
+
+clear 
+
+centos_6 () {
+		echo "starting Centos 6 Spacewalk client setup"
+		echo "$SPACEWALKSERVERIP           $SPACEWALKFQDN " >> /etc/hosts
+		yum  -y install epel-release;
+		rpm -Uvh https://copr-be.cloud.fedoraproject.org/results/@spacewalkproject/spacewalk-2.8-client/epel-6-x86_64/00742644-spacewalk-repo/spacewalk-client-repo-2.8-11.el6.noarch.rpm;
+		rpm -Uvh http://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm;
+		yum  -y install rhn-client-tools rhn-check rhn-setup rhnsd m2crypto yum-rhn-plugin  rhncfg rhncfg-actions rhncfg-client osad;
+		curl --insecure -O https://$SPACEWALKSERVERIP/pub/rhn-org-trusted-ssl-cert-1.0-1.noarch.rpm;
+		rpm -ivh rhn-org-trusted-ssl-cert-1.0-1.noarch.rpm;
+		rhnreg_ks --serverUrl=https://$SPACEWALKSERVERIP/XMLRPC --sslCACert=/usr/share/rhn/RHN-ORG-TRUSTED-SSL-CERT --activationkey=$CENTOS6_ACTIVATIONKEY;
+		mkdir /etc/yum.repos.d/repo_backup;
+		mv /etc/yum.repos.d/*.repo /etc/yum.repos.d/repo_backup/;
+		sed -i "/serverURL=/c\serverURL=https://$SPACEWALKFQDN/XMLRPC" "/etc/sysconfig/rhn/up2date";
+		sed -i '/INTERVAL/c\INTERVAL=60' /etc/sysconfig/rhn/rhnsd;
+		service rhnsd restart; service osad start;
+		chkconfig rhnsd on; chkconfig osad on;
+		rhn-actions-control--enable-all
+		yum clean all;
+		rhn_check;
+		echo " verify your repos match spacewalk and all controls enabled:";
+		yum repolist all; 
+		rhn-actions-control --report; 
+		}
+
+centos_7 () {		
+		echo "starting Centos 7 Spacewalk client setup"
+		echo "$SPACEWALKSERVERIP           $SPACEWALKFQDN " >> /etc/hosts
+		yum  -y install epel-release;
+		rpm -Uvh https://copr-be.cloud.fedoraproject.org/results/%40spacewalkproject/spacewalk-2.8-client/epel-7-x86_64/00742644-spacewalk-repo/spacewalk-client-repo-2.8-11.el7.centos.noarch.rpm;
+		rpm -Uvh http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm;
+		yum  -y install rhn-client-tools rhn-check rhn-setup rhnsd m2crypto yum-rhn-plugin  rhncfg rhncfg-actions rhncfg-client osad;
+		curl --insecure -O https://$SPACEWALKSERVERIP/pub/rhn-org-trusted-ssl-cert-1.0-1.noarch.rpm;
+		rpm -ivh rhn-org-trusted-ssl-cert-1.0-1.noarch.rpm;
+		rhnreg_ks --serverUrl=https://$SPACEWALKSERVERIP/XMLRPC --sslCACert=/usr/share/rhn/RHN-ORG-TRUSTED-SSL-CERT --activationkey=$CENTOS7_ACTIVATIONKEY;
+		mkdir /etc/yum.repos.d/repo_backup;
+		mv /etc/yum.repos.d/*.repo /etc/yum.repos.d/repo_backup/;
+		sed -i "/serverURL=/c\serverURL=https://$SPACEWALKFQDN/XMLRPC" "/etc/sysconfig/rhn/up2date";
+		sed -i '/INTERVAL/c\INTERVAL=60' /etc/sysconfig/rhn/rhnsd;
+		systemctl restart rhnsd; systemctl start osad;
+		systemctl enable rhnsd; systemctl enable osad
+		rhn-actions-control --enable-all
+		yum clean all;
+		rhn_check;
+		echo " verify your repos match spacewalk and all controls enabled:";
+		yum repolist all; 
+		rhn-actions-control --report;
+		}
+
+
+if grep -q -i "release 6" /etc/*-release; then
+	centos_6
+else
+	centos_7
+fi
+
+
+
+
+
+
+
+
+
+
+
+
+
+
