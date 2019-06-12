@@ -59,8 +59,11 @@ centos_7 () {
 
 if grep -q -i "release 6" /etc/*-release; then
 	centos_6
-else
+elef grep -q -i "release 7" /etc/*-release; then
 	centos_7
+else
+	echo "Your version of linux is not supported"
+	echo "Install functions only supported for centos 6 & 7 at this time"
 fi
 
 
