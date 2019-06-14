@@ -1,0 +1,114 @@
+#!/bin/bash
+
+#Run this script if your space walk server has a trusted SSL installed (non self-signed cert)
+
+
+clear
+###Modify Values to match Spacewalk server setup###
+SPACEWALKSERVERIP=
+SPACEWALKFQDN=
+CENTOS6_ACTIVATIONKEY=
+CENTOS7_ACTIVATIONKEY=
+
+
+
+centos_6 () {
+		echo "starting Centos 6 Spacewalk client setup"
+		yum  -y install epel-release;
+		rpm -Uvh https://copr-be.cloud.fedoraproject.org/results/@spacewalkproject/spacewalk-2.8-client/epel-6-x86_64/00742644-spacewalk-repo/spacewalk-client-repo-2.8-11.el6.noarch.rpm;
+		rpm -Uvh http://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm;
+		yum  -y install rhn-client-tools rhn-check rhn-setup rhnsd m2crypto yum-rhn-plugin  rhncfg rhncfg-actions rhncfg-client osad;
+		curl -O https://$SPACEWALKFQDN/pub/rhn-org-trusted-ssl-cert-1.0-1.noarch.rpm;
+		rpm -ivh rhn-org-trusted-ssl-cert-1.0-1.noarch.rpm;
+		rhnreg_ks --serverUrl=https://$SPACEWALKFQDN/XMLRPC --sslCACert=/usr/share/rhn/RHN-ORG-TRUSTED-SSL-CERT --activationkey=$CENTOS6_ACTIVATIONKEY;
+		mkdir /etc/yum.repos.d/repo_backup;
+		mv /etc/yum.repos.d/*.repo /etc/yum.repos.d/repo_backup/;
+		sed -i "/serverURL=/c\serverURL=https://$SPACEWALKFQDN/XMLRPC" "/etc/sysconfig/rhn/up2date";
+		sed -i '/INTERVAL/c\INTERVAL=60' /etc/sysconfig/rhn/rhnsd;
+		service rhnsd restart; service osad start;
+		chkconfig rhnsd on; chkconfig osad on;
+		rhn-actions-control --enable-all
+		yum clean all;
+		rhn_check;
+		echo " verify your repos match spacewalk and all controls enabled:";
+		yum repolist all; 
+		rhn-actions-control --report; 
+		}
+
+centos_7 () {		
+		echo "starting Centos 7 Spacewalk client setup"
+		yum  -y install epel-release;
+		rpm -Uvh https://copr-be.cloud.fedoraproject.org/results/%40spacewalkproject/spacewalk-2.8-client/epel-7-x86_64/00742644-spacewalk-repo/spacewalk-client-repo-2.8-11.el7.centos.noarch.rpm;
+		rpm -Uvh http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm;
+		yum  -y install rhn-client-tools rhn-check rhn-setup rhnsd m2crypto yum-rhn-plugin  rhncfg rhncfg-actions rhncfg-client osad;
+		curl  -O https://$SPACEWALKFQDN/pub/rhn-org-trusted-ssl-cert-1.0-1.noarch.rpm;
+		rpm -ivh rhn-org-trusted-ssl-cert-1.0-1.noarch.rpm;
+		rhnreg_ks --serverUrl=https://$SPACEWALKFQDN/XMLRPC --sslCACert=/usr/share/rhn/RHN-ORG-TRUSTED-SSL-CERT --activationkey=$CENTOS7_ACTIVATIONKEY;
+		mkdir /etc/yum.repos.d/repo_backup;
+		mv /etc/yum.repos.d/*.repo /etc/yum.repos.d/repo_backup/;
+		sed -i "/serverURL=/c\serverURL=https://$SPACEWALKFQDN/XMLRPC" "/etc/sysconfig/rhn/up2date";
+		sed -i '/INTERVAL/c\INTERVAL=60' /etc/sysconfig/rhn/rhnsd;
+		systemctl restart rhnsd; systemctl start osad;
+		systemctl enable rhnsd; systemctl enable osad
+		rhn-actions-control --enable-all
+		yum clean all;
+		rhn_check;
+		echo " verify your repos match spacewalk and all controls enabled:";
+		yum repolist all; 
+		rhn-actions-control --report;
+		}
+
+
+
+
+
+###Checking OS before continuing###
+VERSION=
+if grep -q -i "release 6" /etc/*-release; then
+        VERSION=6
+elif grep -q -i "release 7" /etc/*-release; then
+        VERSION=7
+else
+        echo "Current OS not supported by this script"; exit 1
+fi
+
+###Check for CA bundle###
+echo "Checking CA Issuer Bundle"
+echo "$SPACEWALKSERVERIP           $SPACEWALKFQDN " >> /etc/hosts
+
+CACHECK= curl -vs  https://$SPACEWALKFQDN 2>&1 | grep "NSS error -8179"
+CACHECKSTATUS=$?
+if [ $CACHECKSTATUS -eq 0 ]; then
+	echo "CA Issuer Bundle not found, Need to manually install CA Issuer Bundle"; exit 1
+else
+	echo "CA Issuer Bundle Found."
+fi
+
+###Running OS specific install variable###
+if [ $VERSION == 6 ]; then
+	centos_6
+elif [ $VERSION == 7 ]; then
+	centos_7
+else
+	exit 1
+fi
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
