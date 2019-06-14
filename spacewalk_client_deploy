@@ -1,5 +1,6 @@
 #!/bin/bash
 
+#SELF SIGNED CERT SET UP SCRIPT
 
 SPACEWALKSERVERIP=
 SPACEWALKFQDN=
@@ -63,7 +64,7 @@ elef grep -q -i "release 7" /etc/*-release; then
 	centos_7
 else
 	echo "Your version of linux is not supported"
-	echo "Install functions only supported for centos 6 & 7 at this time"
+	echo "Install functions only supported for centos 6 & 7 at this time"; exit 1
 fi
 
 
