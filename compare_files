@@ -1,0 +1,16 @@
+#!/bin/bash
+###check script to compare/validate files###
+###add two full file paths for comparison:###
+#################################
+FILE1=
+FILE2=
+#################################
+
+echo "diff output: ";
+diff <(md5sum $FILE1; sha1sum $FILE1; sha256sum $FILE1) <(md5sum $FILE2; sha1sum $FILE2; sha256sum $FILE2);
+echo "cmp output(if blank no discrepancy found): ";
+cmp -l $FILE1 $FILE2 |  grep -in "oldValue" | grep -in "newValue";
+echo
+echo "If above outputs show any discrepancies between the files please ctrl-c now as the next hexdump comparison will most likely reflect the same discrepancies and fill up the terminal";
+sleep 25;                  
+diff <(xxd $FILE1) <(xxd $FILE2)
