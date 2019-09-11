@@ -1,0 +1,18 @@
+#!/bin/bash
+#read list on READLIST and remove lines from EDITLIST that match READLIST lines
+############################
+READLIST=
+EDITLIST=
+############################
+
+
+
+#remove blank lines from both:
+sed -i '/^$/d' $READLIST
+sed -i '/^$/d' $EDITLIST
+
+cat $READLIST | while read registeredips
+do
+	sed -i "/$registeredips/d" $EDITLIST > /dev/null
+
+done
