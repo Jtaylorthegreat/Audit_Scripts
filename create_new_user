@@ -1,0 +1,20 @@
+#!/bin/bash
+
+if [ -z "$2" ]; then
+  echo "Usage: ./create_new_user [NEWUSERNAME] [emailaddress]";
+  echo "Example: ./create_new_user NEWUSERNAME myemail@emails.com";
+else
+  CREATEUSER=$1
+  EMAILPASS=$2
+  NEWUSERPASS=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9!@#$%^&*()' | fold -w 15 | head -n 1)
+  useradd $CREATEUSER && echo "$CREATEUSER:$NEWUSERPASS"| chpasswd
+  chage -d 0 $CREATEUSER;
+  echo "Please login with the following temporary password:"
+  echo "$NEWUSERPASS"
+  echo "Your new temporary password is:" > /tmp/mailer
+  echo "$NEWUSERPASS" >> /tmp/mailer
+  echo "sending temporary password to $EMAILPASS"
+  mailx -s "User Initialization" -S smtp=smtp://ENTERSMTPRELAYADDRESS $EMAILPASS < /tmp/mailer
+  alias rm=rm
+  rm -f /tmp/mailer
+fi
