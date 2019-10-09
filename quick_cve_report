@@ -1,20 +1,22 @@
-**Version 1 :**
-*(for just a few CVE's)*
-<br>
+Version 1 (for just a few CVE's):
+__________________________________________________________________________________
 
-    #!/bin/bash
-    #Quick CVE Report
-    #Enter CVE's below:
-    cvelist="CVE-2017-5753 CVE-2017-5715 CVE-2017-5754"
+ #!/bin/bash
+ #Quick CVE Report
+ #Enter CVE's below:
+ cvelist="CVE-2017-5753 CVE-2017-5715 CVE-2017-5754"
     
-    for cve in $cvelist; do
-    	rpm -qa --changelog | grep -i $cve >> CVE_Report.txt; done
+ for cve in $cvelist; do
+    rpm -qa --changelog | grep -i $cve >> CVE_Report.txt; done
+ 
+__________________________________________________________________________________
 
-**Version 2:**
-*(for a longer list of CVE's)*
-<br>
+Version 2(for a longer list of CVE's):
+__________________________________________________________________________________
+
+----------------------------------------------------------------------------------
 Create text file "cvelist" of CVE's with each CVE on it's own line, like so:
-
+----------------------------------------------------------------------------------
     CVE-2018-17082
     CVE-2018-19935
     CVE-2018-20783
@@ -31,10 +33,9 @@ Create text file "cvelist" of CVE's with each CVE on it's own line, like so:
     CVE-2019-9023
     CVE-2019-9024
     CVE-2019-9637
-
-
+-----------------------------------------------------------------------------------
 Script to read "cvelist" and generate report:
-
+-----------------------------------------------------------------------------------
     #!/bin/bash
     #cve checker
     cat cvelist | while read cves
