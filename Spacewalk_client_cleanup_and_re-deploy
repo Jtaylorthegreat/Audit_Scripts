@@ -1,0 +1,201 @@
+#!/bin/bash
+#------------------------------------------------------------------------------------------------------------------------
+#ONLY RUN THIS SCRIPT IF YOU NEED TO REMOVE A PREVIOUS SPACEWALK INSTALLATION AND RE-REGISTER TO A NEW SPACEWALK SERVER
+#This script is configured for spacewalk servers that were configured with a trusted ssl cert installed (non self-signed cert)
+#If you have a self-signed ssl cert installed please pay attention to lines 68-71 & 157-160 and edit as needed
+#------------------------------------------------------------------------------------------------------------------------
+
+
+clear
+SPACEWALKSERVERIP=
+SPACEWALKFQDN=
+CENTOS6_ACTIVATIONKEY=
+CENTOS7_ACTIVATIONKEY=
+
+
+
+centos_6 () {
+    echo "Cleaning up previous Centos 6 spacewalk install";
+
+    #disable previous spacewalk control in order to remove packages:
+    sed -i 's/enabled *= *1/enabled=0/' /etc/yum/pluginconf.d/rhnplugin.conf;
+       
+    #restore repo_backup if exists
+	if [ -d "/etc/yum.repos.d/repo_backup" ]
+	then
+	    echo "restoring disabled repos";
+        rm /etc/yum.repos.d/repo_backup/space*;
+	    mv /etc/yum.repos.d/repo_backup/* /etc/yum.repos.d/
+	    rm -r /etc/yum.repos.d/repo_backup
+	else
+	    rm /etc/yum.repos.d/space*;
+	    echo "repos still enabled, moving forward"
+	fi
+
+
+ 
+        #remove  old spacewalk agent repos and packages:
+        yum remove -y rhn* osad spacewalk* yum-rhn-plugin;
+        yum  -y remove rhn-client-tools rhn-check rhn-setup rhnsd m2crypto yum-rhn-plugin  rhncfg rhncfg-actions rhncfg-client osad;
+        sleep 1;
+
+        #manual cleanup of remaining spacewalk & rhn rpms:
+        OLDSPACERPMS=$(rpm -qa | grep space)
+        OLDRHNRPMS=$(rpm -qa | grep rhn-org-trusted-ssl-cert)
+        for REMOVERPM in $OLDSPACERPMS; do
+            rpm -e $REMOVERPM
+        done
+        for REMOVERHN in $OLDRHNRPMS; do
+            rpe -e $REMOVERHN
+        done
+
+        #comment out previous hostnames in /etc/hosts:
+        sed -i 's/.*space/#&/' /etc/hosts;
+        sed -i 's/.*SPACE/#&/' /etc/hosts;
+
+        #clean up old epel:
+        yum  -y remove epel-release;
+        yum clean all;
+        clear;
+        echo "Cleanup finished";
+       
+        echo "starting Centos 6 Spacewalk client setup"
+        echo "$SPACEWALKSERVERIP           $SPACEWALKFQDN " >> /etc/hosts;
+
+        #install repos:
+        yum  -y install epel-release;
+        rpm -Uvh https://copr-be.cloud.fedoraproject.org/results/@spacewalkproject/spacewalk-2.8-client/epel-6-x86_64/00742644-spacewalk-repo/spacewalk-client-repo-2.8-11.el6.noarch.rpm;
+
+        #install required packages:
+        yum  -y install rhn-client-tools rhn-check rhn-setup rhnsd m2crypto yum-rhn-plugin  rhncfg rhncfg-actions rhncfg-client osad;
+        
+        #pull cert from spacewalk server:
+        curl -O https://$SPACEWALKFQDN/pub/rhn-org-trusted-ssl-cert-1.0-1.noarch.rpm;
+        #Use below option instead if your spacewalk server is using a self-signed ssl cert:
+        #curl --insecure -O https://$SPACEWALKFQDN/pub/rhn-org-trusted-ssl-cert-1.0-1.noarch.rpm;
+        
+        Install cert:
+        rpm -ivh rhn-org-trusted-ssl-cert-1.0-1.noarch.rpm;
+
+        #register to spacewalk server:
+        rhnreg_ks --serverUrl=https://$SPACEWALKFQDN/XMLRPC --sslCACert=/usr/share/rhn/RHN-ORG-TRUSTED-SSL-CERT --activationkey=$CENTOS6_ACTIVATIONKEY --force;
+        
+        #backup repos:
+        mkdir /etc/yum.repos.d/repo_backup;
+        mv /etc/yum.repos.d/*.repo /etc/yum.repos.d/repo_backup/;
+
+        #configure, enable and start rhn:
+        sed -i "/serverURL=/c\serverURL=https://$SPACEWALKFQDN/XMLRPC" "/etc/sysconfig/rhn/up2date";
+        sed -i '/INTERVAL/c\INTERVAL=60' /etc/sysconfig/rhn/rhnsd;
+        sed -i 's/enabled *= *0/enabled=1/' /etc/yum/pluginconf.d/rhnplugin.conf;
+        service rhnsd restart; 
+        chkconfig rhnsd on; chkconfig osad on;
+        rhn-actions-control --enable-all
+        yum clean all;
+        rhn_check;
+        echo " verify your repos match spacewalk and all controls enabled:";
+        yum repolist all; 
+        rhn-actions-control --report; 
+        
+        #start osad in background since it takes a while to start on centos 6
+        #server is registered to spacewalk at this time
+        echo "Starting osad in background";
+        nohup service osad start &
+        echo "Spacewalk setup complete";
+        }
+
+centos_7 () {      
+
+    #If spacewalk was previously installed via this script(as indidcated by existing directory: /etc/yum.repos.d.repo_backup) Clean up previous install: 
+    if [ -d "/etc/yum.repos.d/repo_backup" ]
+    then
+        echo "Cleaning up previous Centos 7 spacewalk install";
+        #disable previous spacewalk control in order to remove packages:
+        sed -i 's/enabled *= *1/enabled=0/' /etc/yum/pluginconf.d/rhnplugin.conf;
+
+        echo "restoring disabled repos";
+        rm /etc/yum.repos.d/repo_backup/space*;
+        mv /etc/yum.repos.d/repo_backup/* /etc/yum.repos.d/;
+        rm -r /etc/yum.repos.d/repo_backup;
+
+        #remove  old spacewalk agent repos and packages:
+        yum remove -y rhn* osad spacewalk* yum-rhn-plugin;
+        yum  -y remove rhn-client-tools rhn-check rhn-setup rhnsd m2crypto yum-rhn-plugin  rhncfg rhncfg-actions rhncfg-client osad;
+
+        #manual cleanup of remaining spacewalk & rhn rpms:
+        OLDSPACERPMS=$(rpm -qa | grep space)
+        OLDRHNRPMS=$(rpm -qa | grep rhn-org-trusted-ssl-cert)
+        for REMOVERPM in $OLDSPACERPMS; do
+            rpm -e $REMOVERPM
+        done
+        for REMOVERHN in $OLDRHNRPMS; do
+            rpe -e $REMOVERHN
+        done
+
+        #comment out previous hostnames in /etc/hosts:
+        sed -i 's/.*space/#&/' /etc/hosts;
+        sed -i 's/.*SPACE/#&/' /etc/hosts;
+
+
+        #clean up old epel:
+        yum  -y remove epel-release;
+        yum clean all;
+        clear;
+        echo "Cleanup finished";
+    else
+        echo "No cleanup needed at this time"
+    fi
+
+
+
+        echo "starting Centos 7 Spacewalk client setup"
+        echo "$SPACEWALKSERVERIP           $SPACEWALKFQDN " >> /etc/hosts
+
+        #install repos:
+        yum  -y install epel-release;
+        rpm -Uvh https://copr-be.cloud.fedoraproject.org/results/%40spacewalkproject/spacewalk-2.8-client/epel-7-x86_64/00742644-spacewalk-repo/spacewalk-client-repo-2.8-11.el7.centos.noarch.rpm;
+
+        #install required packages:
+        yum  -y install rhn-client-tools rhn-check rhn-setup rhnsd m2crypto yum-rhn-plugin  rhncfg rhncfg-actions rhncfg-client osad;
+
+        #pull cert from spacewalk server:
+        curl  -O https://$SPACEWALKFQDN/pub/rhn-org-trusted-ssl-cert-1.0-1.noarch.rpm;
+        #Use below option instead if your spacewalk server is using a self-signed ssl cert:
+        #curl --insecure -O https://$SPACEWALKFQDN/pub/rhn-org-trusted-ssl-cert-1.0-1.noarch.rpm;
+        
+        Install Cert:
+        rpm -ivh rhn-org-trusted-ssl-cert-1.0-1.noarch.rpm;
+
+        #register to spacewalk server:
+        rhnreg_ks --serverUrl=https://$SPACEWALKFQDN/XMLRPC --sslCACert=/usr/share/rhn/RHN-ORG-TRUSTED-SSL-CERT --activationkey=$CENTOS7_ACTIVATIONKEY;
+        
+        #backup repos:
+        mkdir /etc/yum.repos.d/repo_backup;
+        mv /etc/yum.repos.d/*.repo /etc/yum.repos.d/repo_backup/;
+
+        #configure, enable and star rhn:
+        sed -i "/serverURL=/c\serverURL=https://$SPACEWALKFQDN/XMLRPC" "/etc/sysconfig/rhn/up2date";
+        sed -i '/INTERVAL/c\INTERVAL=60' /etc/sysconfig/rhn/rhnsd;
+        systemctl restart rhnsd; systemctl start osad;
+        systemctl enable rhnsd; systemctl enable osad
+        rhn-actions-control --enable-all
+        yum clean all;
+        rhn_check;
+        echo " verify your repos match spacewalk and all controls enabled:";
+        yum repolist all; 
+        rhn-actions-control --report;
+        }
+
+
+
+
+
+###Checking OS before continuing###
+if grep -q -i "release 6" /etc/*-release; then
+    centos_6
+elif grep -q -i "release 7" /etc/*-release; then
+    centos_7
+else
+    echo "Your version of linux is not supported"
+    echo "Install functions only supported for centos 6 & 7 at this time"; exit 1
+fi
