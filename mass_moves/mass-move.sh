@@ -15,7 +15,7 @@ else
 		action=$3
 		file=$4
 		for ip in `cat iplist`;	do
-			/usr/bin/expect -c ' spawn scp -P2242 '$file' '$user'@'$ip':/home/'$user'/
+			/usr/bin/expect -c ' spawn scp '$file' '$user'@'$ip':/home/'$user'/
 			expect "assword"
 			send "'$passwd'\r"
 			"interact"'; done
@@ -26,7 +26,7 @@ else
 		action=$3
 		file=$4
 		for ip in `cat iplist`;	do
-			/usr/bin/expect -c ' spawn scp -P2242  '$user'@'$ip':/home/'$user'/'$file' '$file'_'$ip'
+			/usr/bin/expect -c ' spawn scp '$user'@'$ip':/home/'$user'/'$file' '$file'_'$ip'
 			expect "assword"
 			send "'$passwd'\r"
 			"interact"'; done
