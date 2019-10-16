@@ -52,6 +52,7 @@ Script to read "cvelist" and generate report:
     echo "                 " >> cve_$(hostname)_$(date '+%F').txt
     echo "$DT              " >> cve_$(hostname)_$(date '+%F').txt
     echo "-----------------" >> cve_$(hostname)_$(date '+%F').txt
+    echo "                 " >> cve_$(hostname)_$(date '+%F').txt
                                                      
     cat cvelist | while read cves
     do
