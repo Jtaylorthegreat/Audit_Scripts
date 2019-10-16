@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# script depends on expect being installed and a list of ips named "iplest" with each ip on it's own line
+# Examples:
+#./mass-move.sh MYUSER get remotefile.txt
+#./mass-move.sh MYUSER push localfile.txt
+passwd=ENTERPASSWORDHERE
+if [ -z "$3" ]; then 
+	echo "Usage: ./mass-move USER ACTION[get/push] FILE"
+	exit 2
+else
+	if [ $2 == "push" ]; then
+		user=$1
+		action=$2
+		file=$3
+		for ip in `cat iplist`;	do
+			/usr/bin/expect -c ' spawn scp -P2242 '$file' '$user'@'$ip':/home/'$user'/
+			expect "assword"
+			send "'$passwd'\r"
+			"interact"'; done
+
+	elif [ $2 == "get" ]; then
+		user=$1
+		action=$2
+		file=$3
+		for ip in `cat iplist`;	do
+			/usr/bin/expect -c ' spawn scp -P2242  '$user'@'$ip':/home/'$user'/'$file' '$file'_'$ip'
+			expect "assword"
+			send "'$passwd'\r"
+			"interact"'; done
+	else
+		echo "Usage: ./mass-move USER get/push FILE"
+		echo "Example: ./mass-move bob push myfile.txt"
+		exit 3
+	fi
+fi
