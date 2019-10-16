@@ -38,9 +38,24 @@ Script to read "cvelist" and generate report:
 -----------------------------------------------------------------------------------
     #!/bin/bash
     #cve checker
+    #hostname
+    HOSTNAME=`hostname`
+    IPADD=`ip a`
+    DT=`date`
+
+
+    echo "PATCHED CVE'S    " > cve_$(hostname)_$(date '+%F').txt
+    echo "                 " >> cve_$(hostname)_$(date '+%F').txt
+    echo "$HOSTNAME        " >> cve_$(hostname)_$(date '+%F').txt
+    echo "                 " >> cve_$(hostname)_$(date '+%F').txt
+    echo "$IPADD           " >> cve_$(hostname)_$(date '+%F').txt
+    echo "                 " >> cve_$(hostname)_$(date '+%F').txt
+    echo "$DT              " >> cve_$(hostname)_$(date '+%F').txt
+    echo "-----------------" >> cve_$(hostname)_$(date '+%F').txt
+                                                     
     cat cvelist | while read cves
     do
-    	rpm -qa --changelog | grep -i $cves >> CVE_Report.txt; done 
+    	rpm -qa --changelog | grep -i $cves >> cve_$(hostname)_$(date '+%F').txt; done 
 
 
 
