@@ -1,3 +1,3 @@
 # Audit_Scripts
 
-Collection of Bash audit scripts and basic sysadmin tools
+Collection of miscellaneous Bash scripts and basic sysadmin notes/tools
