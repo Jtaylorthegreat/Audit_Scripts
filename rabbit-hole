@@ -1,0 +1,11 @@
+#!/bin/bash
+count=0;
+while true 
+do
+read -p "Currently on level $count wanna keep going down the rabbit hole? [Y/N] " answer
+	case "$answer" in 
+		[Y/y]* ) ((count++)) ;; 
+		[N/n]* ) echo "Breaking out of $count levels"; break $count ;;
+		* ) echo "please enter Y/N " ;;
+esac
+done
