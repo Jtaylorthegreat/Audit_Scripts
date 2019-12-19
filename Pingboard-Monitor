@@ -1,0 +1,23 @@
+#!/bin/bash
+#This script relies on list of hosts in monitor.txt file
+#
+R="\e[0;49;31m"
+W="\e[0;39m"
+G="\e[1;32m"
+while true
+do
+echo `clear`
+echo `date`
+echo "                Ping Board            "
+echo "--------------------------------------"
+cat monitor.txt | while read ips
+do
+        ping -c 1 "$ips" > /dev/null
+        if [ $? -eq 0 ]; then
+        echo -e "node $ips is $G up $W"
+        else echo -e "node $ips is $R down $W"
+        fi
+done
+echo "--------------------------------------"
+sleep 25
+done
