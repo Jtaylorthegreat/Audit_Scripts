@@ -1,0 +1,10 @@
+#!/bin/bash
+
+if [ -z "$2" ]; then 
+	echo "Usage: ./iso_to_usb /path/to/file.iso /dev/sdX";
+else
+	ISO=$1
+	LOCATION=$2
+	echo writing $ISO to $LOCATION please wait...
+	sudo dd bs=4M if=$ISO of=$LOCATION status=progress oflag=sync
+fi
