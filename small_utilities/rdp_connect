@@ -1,0 +1,7 @@
+#!/bin/bash
+
+if [ -z "$2" ]; then 
+	echo "Usage: rdp_connect IP PORT"
+else
+	xfreerdp /size:1280x720 cert-ignore /v:$1 /port:$2
+fi
