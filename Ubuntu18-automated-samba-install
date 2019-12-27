@@ -1,0 +1,76 @@
+#!/bin/bash
+
+#-----------------------------------------------------------
+#Configure Variables
+
+   #User Credentials:
+   SAMBAUSER=
+   SAMBAUSERPASS=
+   #Samba Server Info:
+   SAMBADOMAIN=
+   SAMBASERVERIP=
+   SAMBAWORKGROUP=
+   SAMBAREMOTEDIRECTORY=
+   #Local directory for samba mount: 
+   LOCALDIR=
+   #Local user 
+   LOCALUSER=
+
+#-----------------------------------------------------------
+
+
+
+
+
+
+
+   #adding root check later, may be able to remove samba: 
+   apt install -y cifs-utils samba samba-client  
+   
+
+   echo "username=$SAMBAUSER" > /etc/samba/shared.creds
+   echo "password=$SAMBAUSERPASS" >> /etc/samba/shared.creds
+   echo "domain=$SAMBADOMAIN" >> /etc/samba/shared.creds
+
+   mv /etc/samba/smb.conf /etc/samba/smb.original.conf
+
+   echo "[global]" > /etc/samba/smb.conf
+   echo "workgroup =  $SAMBAWORKGROUP" >> /etc/samba/smb.conf
+   echo "server string = %h server (Samba, Ubuntu)" >> /etc/samba/smb.conf  
+   echo "dns proxy = no" >> /etc/samba/smb.conf 
+   echo "log file = /var/log/samba/log.%m" >> /etc/samba/smb.conf 
+   echo "max log size = 1000" >> /etc/samba/smb.conf 
+   echo "panic action = /usr/share/samba/panic-action %d" >> /etc/samba/smb.conf 
+   echo "server role = standalone server" >> /etc/samba/smb.conf 
+   echo "passdb backend = tdbsam" >> /etc/samba/smb.conf 
+   echo "obey pam restrictions = no" >> /etc/samba/smb.conf 
+   echo "unix password sync = yes" >> /etc/samba/smb.conf 
+   echo "passwd program = /usr/bin/passwd %u" >> /etc/samba/smb.conf 
+   echo "passwd chat = *Enter\snew\s*\spassword:* %n\n *Retype\snew\s*\spassword:* %n\n *password\supdated\ssuccessfully* ." >> /etc/samba/smb.conf 
+   echo "pam password change = yes" >> /etc/samba/smb.conf 
+   echo "map to guest = bad user" >> /etc/samba/smb.conf 
+   echo "usershare allow guests = yes" >> /etc/samba/smb.conf 
+   echo "client max protocol = SMB3" >> /etc/samba/smb.conf 
+
+   cp /etc/fstab /etc/fstab.original.backup
+   echo "//$SAMBASERVERIP/$SAMBAREMOTEDIRECTORY/ $LOCALDIR cifs rw,credentials=/etc/samba/shared.creds,sec=ntlmssp,_netdev,file_mode=0770,dir_mode=0770 0      0" >> /etc/fstab
+   
+
+   cp /etc/pam.d/login /etc/pam.d/login.original.backup
+   echo "auth optional pam_cifscreds.so" >> /etc/pam.d/login
+   echo "session required pam_keyinit.so" >> /etc/pam.d/login
+   echo "session optional pam_cifscreds.so debug domain=$SAMBADOMAIN" >> /etc/pam.d/login
+
+
+   sudo mkdir -p $LOCALDIR
+   sudo chown $LOCALUSER:$LOCALUSER -R $LOCALDIR
+   
+   #adding expect later after further testing:
+   #/usb/bin/expect -c 'spawn cifscreds -u '$SAMBAUSER' add '$SAMBASERVERIP'
+   #expect "assword"
+   #send "'$SAMBAUSERPASS'\r"
+   #"interact"
+   cifscreds clearall 
+   cifscreds -u $SAMBAUSER add $SAMBASERVERIP
+
+   mount -a 
