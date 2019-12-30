@@ -24,9 +24,8 @@
 
 
 
-   #adding root check later, may be able to remove samba: 
-   #apt install -y cifs-utils samba samba-client  
-   apt install -y cifs-utils samba-client 
+   
+   apt install -y cifs-utils samba-client expect 
 
    echo "username=$SAMBAUSER" > /etc/samba/shared.creds
    echo "password=$SAMBAUSERPASS" >> /etc/samba/shared.creds
@@ -70,10 +69,13 @@
    su - $LOCALUSER
    #adding expect later after further testing:
    #/usb/bin/expect -c 'spawn cifscreds -u '$SAMBAUSER' add '$SAMBASERVERIP'
-   #expect "assword"
-   #send "'$SAMBAUSERPASS'\r"
-   #"interact"
-   cifscreds clearall 
-   cifscreds -u $SAMBAUSER add $SAMBASERVERIP
+   /usb/bin/expect -c 'spawn cifscreds -u '$SAMBAUSER' add '$SAMBASERVERIP'
+   expect "assword"
+   send "'$SAMBAUSERPASS'\r"
+   "interact"
+   #cifscreds clearall 
+   #cifscreds -u $SAMBAUSER add $SAMBASERVERIP
 
-   mount -a 
+   #mount -a 
+   
+   echo "reboot for changes to take effect"
