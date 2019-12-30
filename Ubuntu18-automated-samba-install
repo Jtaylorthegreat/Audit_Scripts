@@ -55,7 +55,8 @@
    echo "client max protocol = SMB3" >> /etc/samba/smb.conf 
 
    cp /etc/fstab /etc/fstab.original.backup
-   echo "//$SAMBASERVERIP/$SAMBAREMOTEDIRECTORY/ $LOCALDIR cifs rw,credentials=/etc/samba/shared.creds,sec=ntlmssp,_netdev,file_mode=0770,dir_mode=0770 0      0" >> /etc/fstab
+   #echo "//$SAMBASERVERIP/$SAMBAREMOTEDIRECTORY/ $LOCALDIR cifs rw,credentials=/etc/samba/shared.creds,sec=ntlmssp,_netdev,file_mode=0770,dir_mode=0770 0      0" >> /etc/fstab
+   echo "//$SAMBASERVERIP/$SAMBAREMOTEDIRECTORY $LOCALDIR cifs rw,credentials=/etc/samba/shared.creds,sec=ntlmssp,_netdev,file_mode=0770,dir_mode=0770 0      0" >> /etc/fstab
    
 
    cp /etc/pam.d/login /etc/pam.d/login.original.backup
@@ -66,7 +67,7 @@
 
    sudo mkdir -p $LOCALDIR
    sudo chown $LOCALUSER:$LOCALUSER -R $LOCALDIR
-   
+   su - $LOCALUSER
    #adding expect later after further testing:
    #/usb/bin/expect -c 'spawn cifscreds -u '$SAMBAUSER' add '$SAMBASERVERIP'
    #expect "assword"
