@@ -1,5 +1,6 @@
 #!/bin/bash
-
+#This script has only been tested for Ubuntu 18.04
+#Do not run on centos 7 as pam_cifscreds was not implemented until Centos 8 
 #-----------------------------------------------------------
 #Configure Variables
 
