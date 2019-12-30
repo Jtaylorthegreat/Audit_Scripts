@@ -25,12 +25,14 @@
 
 
    #adding root check later, may be able to remove samba: 
-   apt install -y cifs-utils samba samba-client  
-   
+   #apt install -y cifs-utils samba samba-client  
+   apt install -y cifs-utils samba-client 
 
    echo "username=$SAMBAUSER" > /etc/samba/shared.creds
    echo "password=$SAMBAUSERPASS" >> /etc/samba/shared.creds
    echo "domain=$SAMBADOMAIN" >> /etc/samba/shared.creds
+   chmod 640 /etc/samba/shared.creds
+   chown root:root /etc/samba/shared.creds
 
    mv /etc/samba/smb.conf /etc/samba/smb.original.conf
 
