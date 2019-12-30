@@ -18,13 +18,6 @@
 
 #-----------------------------------------------------------
 
-
-
-
-
-
-
-   
    apt install -y cifs-utils samba-client expect 
 
    echo "username=$SAMBAUSER" > /etc/samba/shared.creds
@@ -54,7 +47,6 @@
    echo "client max protocol = SMB3" >> /etc/samba/smb.conf 
 
    cp /etc/fstab /etc/fstab.original.backup
-   #echo "//$SAMBASERVERIP/$SAMBAREMOTEDIRECTORY/ $LOCALDIR cifs rw,credentials=/etc/samba/shared.creds,sec=ntlmssp,_netdev,file_mode=0770,dir_mode=0770 0      0" >> /etc/fstab
    echo "//$SAMBASERVERIP/$SAMBAREMOTEDIRECTORY $LOCALDIR cifs rw,credentials=/etc/samba/shared.creds,sec=ntlmssp,_netdev,file_mode=0770,dir_mode=0770 0      0" >> /etc/fstab
    
 
@@ -67,15 +59,7 @@
    sudo mkdir -p $LOCALDIR
    sudo chown $LOCALUSER:$LOCALUSER -R $LOCALDIR
    su - $LOCALUSER
-   #adding expect later after further testing:
-   #/usb/bin/expect -c 'spawn cifscreds -u '$SAMBAUSER' add '$SAMBASERVERIP'
    /usb/bin/expect -c 'spawn cifscreds -u '$SAMBAUSER' add '$SAMBASERVERIP'
    expect "assword"
    send "'$SAMBAUSERPASS'\r"
-   "interact"
-   #cifscreds clearall 
-   #cifscreds -u $SAMBAUSER add $SAMBASERVERIP
-
-   #mount -a 
-   
-   echo "reboot for changes to take effect"
+   "interact"   
