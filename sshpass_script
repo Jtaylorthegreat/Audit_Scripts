@@ -1,0 +1,20 @@
+#!/bin/bash
+#Script Depends on sshpass
+
+PSWDFILE=
+IPLIST=""
+OUTPUTFILE=
+COMMAND=
+USER=
+
+
+echo "$(date)" > $OUTPUTFILE
+echo "----------------" >> $OUTPUTFILE
+
+for ip in $IPLIST; do
+	echo "  "  >> $OUTPUTFILE
+	echo $ip >> $OUTPUTFILE
+	echo "----------------" >> $OUTPUTFILE
+	sshpass -f $PSWDFILE ssh  $USER@$ip $COMMAND >> $OUTPUTFILE
+	echo "----------------" >> $OUTPUTFILE
+done
