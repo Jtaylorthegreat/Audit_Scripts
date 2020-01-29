@@ -1,0 +1,23 @@
+#!/bin/bash
+# Useful script to test internet and dns connectivity in bash
+# Referenced: https://unix.stackexchange.com/questions/190513/shell-scripting-proper-way-to-check-for-internet-connectivity
+
+echo "Testing Internet Connectivity:"
+
+if ping -q -c 1 -W 1 8.8.8.8 >/dev/null; then
+  echo "Public IPv4 is up"
+	if ping -q -c 1 -W 1 google.com >/dev/null; then
+	  echo "DNS is up"
+	else
+	  echo "First DNS query failed, Testing HTTP connectivity"
+	  case "$(curl -s --max-time 2 -I http://google.com | sed 's/^[^ ]*  *\([0-9]\).*/\1/; 1q')" in
+  		[23]) echo "HTTP connectivity appears to be up";;
+  		5) echo "There may be a web proxy blocking the connection"; exit 1 ;;
+  		*) echo "The network is down or very slow"; exit 1 ;;
+	  esac
+
+	fi
+else
+  echo "Public IPv4 is down"
+  exit 1;
+fi
