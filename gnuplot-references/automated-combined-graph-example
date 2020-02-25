@@ -1,3 +1,15 @@
+###---------------------------------------------------------------------------------------------------------------
+#single combined graph for multiple sets of data aggregated over time using the following commands on each host:
+#processcount=`ps aux --no-heading | wc -l`
+#echo "$(date '+%m/%d/%Y %H:%M') $processcount" >> host."$(hostname)"
+
+#data format in each file:
+#day/month/year hour:minute processcount
+#01/25/2008 06:05 222
+###---------------------------------------------------------------------------------------------------------------
+
+#Bash Script to Generate line graph:
+
 #!/bin/bash
 FILENAMEPREFIX="host*"
 OUTPUTFILE="output4.jpg"
