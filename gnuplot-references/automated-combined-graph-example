@@ -46,3 +46,4 @@ echo "\"${LASTFILE}\" using 1:3 title \"${LASTFILE}\" lw 2" >> gnuplot.in
 echo "#" >> gnuplot.in                         
 gnuplot gnuplot.in > output.jpg
 echo "${LOOPCOUNT} files graphed"
+rm gnuplot.in
