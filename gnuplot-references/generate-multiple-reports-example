@@ -1,0 +1,26 @@
+#data aggregated over time using the following on each host:
+#processcount=`ps aux --no-heading | wc -l`
+#echo "$(date '+%m/%d/%Y %H:%M') $processcount" >> host."$(hostname)"
+
+#Generate report for each host data file:
+#!/bin/bash
+for DATAFILE in host*; do
+    gnuplot <<- EOF     
+    reset
+    set terminal jpeg
+    set xdata time
+    set timefmt "%m/%d/%Y %H:%M" 
+    set format x "%H:%M"
+    set xtics rotate by -45
+    set xlabel "Time" 
+    set ylabel "Process Count"
+    set yrange [0:500]
+    set title "24 Count" 
+    set key reverse Left outside
+    set grid
+    set style data lines
+    set output "${DATAFILE}.jpg"
+    plot "${DATAFILE}" using 1:3 title "${DATAFILE} Processes"
+    #
+EOF
+done 
