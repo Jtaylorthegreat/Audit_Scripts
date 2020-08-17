@@ -2,9 +2,9 @@ ________________________________________________________________________________
 Random firewall scripts to assist junior sysadmins for firewalld based systems:
 _______________________________________________________________________________________
 
-
+----------------------------------------------------------------
 Block IP:
--------------------------
+----------------------------------------------------------------
 
 #!/bin/bash
 
@@ -20,9 +20,9 @@ firewall-cmd --list-all | grep $1
 fi
 
 
-
+----------------------------------------------------------------
 Allow_IP_port(tcp):
-----------------------------------
+----------------------------------------------------------------
 
 #!/bin/bash
 
@@ -37,7 +37,7 @@ firewall-cmd --reload
 fi
 
 
-
+----------------------------------------------------------------
 Apache_Top_Unique_IP_Hits:
 ----------------------------------------------------------------
 
@@ -54,12 +54,38 @@ grep $1 /var/log/httpd/access_log | awk '{print$1}' | sort | uniq -c | sort -nr 
 
 fi
 
+----------------------------------------------------------------
+Check_bad_ips (Cronjob script to block IPs that attempt to authenticate with a bad protocol version identification):
+----------------------------------------------------------------
+
+#!/bin/bash
+LOGFILE=
+
+if cat /var/log/secure* | grep -i 'Bad protocol version identification' | awk '{print $12}' > /dev/null; then
+        echo "______________________________" >>  $LOGFILE
+        echo "$(date)" >>   $LOGFILE
+        echo "---------" >>   $LOGFILE
+        for BADIP in `cat /var/log/secure* | grep -i 'Bad protocol version identification' | awk '{print $12}' | uniq`; do
+                if firewall-cmd --list-all | grep $BADIP > /dev/null; then
+                        echo "Rule previously created for IP: $BADIP"  >>  $LOGFILE
+                else
+                        firewall-cmd --permanent --add-rich-rule="rule family='ipv4' source address='$BADIP' reject"
+                        firewall-cmd --reload
+                        echo "!!Created FW block rule for IP: $BADIP" >> $LOGFILE
+                fi
+        done;
+        COUNT=`cat /var/log/secure* | grep -i 'Bad protocol version identification' | awk '{print $12}' | uniq | wc -l`
+        echo "Current count: $COUNT" >> $LOGFILE
+fi
+
+
 _______________________________________________________________________________________
 For UFW based systems:
 _______________________________________________________________________________________
 
+----------------------------------------------------------------
 Block IP:
--------------------------
+----------------------------------------------------------------
 
 #!/bin/bash
 
@@ -74,9 +100,9 @@ echo " "
 ufw status | sed -n 1,4p ; ufw status | grep $1
 fi
 
-
+----------------------------------------------------------------
 Allow_IP_port(tcp):
-----------------------------------
+----------------------------------------------------------------
 
 if [ -z "$2" ]; then
   echo "Usage: ./allow_IP_port IPADDRESS PORT"
