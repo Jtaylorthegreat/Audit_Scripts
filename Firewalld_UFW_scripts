@@ -21,7 +21,7 @@ fi
 
 
 
-Allow_IP_port:
+Allow_IP_port(tcp):
 ----------------------------------
 
 #!/bin/bash
@@ -54,4 +54,36 @@ grep $1 /var/log/httpd/access_log | awk '{print$1}' | sort | uniq -c | sort -nr 
 
 fi
 
+_______________________________________________________________________________________
+For UFW based systems:
+_______________________________________________________________________________________
 
+Block IP:
+-------------------------
+
+#!/bin/bash
+
+if [ -z "$1" ]; then
+  echo "Usage: ./blockip IPADDRESS"
+  echo "Example: ./blockip 192.168.1.5"
+else
+
+ufw reject from $1 to any;
+echo "$1 successfully blocked with the following rule: "
+echo " "
+ufw status | sed -n 1,4p ; ufw status | grep $1
+fi
+
+
+Allow_IP_port(tcp):
+----------------------------------
+
+if [ -z "$2" ]; then
+  echo "Usage: ./allow_IP_port IPADDRESS PORT"
+  echo "Example: ./allow_IP_port 192.168.1.5 2222"
+else
+ufw allow from $1 proto tcp to any port $2; 
+echo "$1 successfully allowed over port $2 with the following rule: "
+echo " "
+ufw status | sed -n 1,4p ; ufw status | grep $1
+fi
