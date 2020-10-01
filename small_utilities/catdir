@@ -1,0 +1,13 @@
+#!/bin/bash
+if [ -z "$1" ]; then
+	echo "Usage: ./catdir /some/directory"
+else
+	for file in $(ls $1); do
+		echo "  "
+		echo "___________________";
+		echo $file":"; 
+		echo "___________________";
+		echo " ";
+		cat $1/$file;
+	done
+fi
