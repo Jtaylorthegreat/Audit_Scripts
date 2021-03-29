@@ -10,6 +10,16 @@ ________________________________________________________________________________
  for cve in $cvelist; do
     rpm -qa --changelog | grep -i $cve >> CVE_Report.txt; done
  
+ -----
+ Ubuntu:
+  #!/bin/bash
+ #Quick CVE Report
+ #Enter CVE's below:
+ cvelist="CVE-2017-5753 CVE-2017-5715 CVE-2017-5754"
+    
+ for cve in $cvelist; do
+    zgrep $cve /usr/share/doc/*/changelog.Debian.gz; done
+ 
 __________________________________________________________________________________
 Version 2(for a longer list of CVE's):
 __________________________________________________________________________________
