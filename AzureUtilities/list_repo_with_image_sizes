@@ -1,0 +1,13 @@
+#!/bin/bash
+###add repo name here omitting  '.azurecr.io' suffix:
+REPO="REPONAMEHERE"
+
+
+arr_reglist=`az acr repository list -n $REPO -o tsv`
+ for myReg in ${arr_reglist[@]}
+do
+  az acr repository show-manifests -n $REPO --repository $myReg --detail --query '[].{Size: imageSize, Tags: tags[0],Created: createdTime, Architecture: architecture, OS: os}' -o tsv | awk -v myReg="$myReg" '{ byte =$1 /1024/1024; print myReg ": " byte " MB", "Tag: "$2, $3, $4 ,$5 }'
+  #az acr repository show-manifests -n yourRegName --repository $myReg --detail --query '[].{Size: imageSize, Tags: tags[0],Created: createdTime, Architecture: architecture, OS: os}' -o tsv
+ done
+
+
