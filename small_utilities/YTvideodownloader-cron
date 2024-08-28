@@ -1,0 +1,34 @@
+#!/bin/bash
+#script depends on yt-dlp https://github.com/yt-dlp/yt-dlp/wiki/Installation
+#put urls in text file named videolist 1 per line
+SOURCEFILE=/path/to/videolist.txt
+PLEXDIRECTORY=/path/to/plex/videos
+OUTPUTLOGLOCATION=/path/to/outputlog
+DOWNLOADDIRECTORY=/path/to/temporaryvideodownloadsdirectory
+
+if [ -s $SOURCEFILE ]; then
+        echo "--------------------------------------------------------" >> $OUTPUTLOGLOCATION
+        echo "$(date)   starting video list download                  " >> $OUTPUTLOGLOCATION
+        echo "--------------------------------------------------------" >> $OUTPUTLOGLOCATION
+        cat $SOURCEFILE | while read VIDS
+        do
+                /usr/local/bin/yt-dlp --merge-output-format mkv $VIDS -P $DOWNLOADDIRECTORY >> $OUTPUTLOGLOCATION 2>&1;
+        done
+
+        echo "$(date)     completed video list download moving to plex directory" >> $OUTPUTLOGLOCATION
+        mv -v $DOWNLOADDIRECTORY/*.mkv $PLEXDIRECTORY  >> $OUTPUTLOGLOCATION 2>&1;
+        if [ $? -eq 0 ]
+        then
+                echo "$(date)      completed video move " >> $OUTPUTLOGLOCATION
+                echo "$(date)      removing the following links from video source file:" >> $OUTPUTLOGLOCATION
+                cat  $SOURCEFILE >> $OUTPUTLOGLOCATION
+                 >  $SOURCEFILE
+                echo "$(date)       $SOURCEFILE cleared " >> $OUTPUTLOGLOCATION
+                chown plex:plex -R $PLEXDIRECTORY
+        else
+                echo "$(date)      video move failed " >> $OUTPUTLOGLOCATION
+                echo "$(date)      retaining links from video source file" >> $OUTPUTLOGLOCATION
+        fi
+else
+        exit 0
+fi
